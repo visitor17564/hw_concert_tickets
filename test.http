@@ -1,0 +1,61 @@
+@host = http://localhost:3000
+@Token = {{login.response.body.$.access_token}}
+
+### 회원가입
+POST {{host}}/user/register
+Content-Type: application/json
+
+{
+    "email": "test@test.com",
+    "password": "1234"
+}
+
+### 로그인
+# @name login
+POST {{host}}/user/login
+Content-Type: application/json
+
+{
+    "email": "test@test.com",
+    "password": "1234"
+}
+
+### email 가져오기
+GET {{host}}/user/email
+Authorization: Bearer {{Token}}
+Content-Type: application/json
+
+### 공연등록
+POST {{host}}/performance
+Authorization: Bearer {{Token}}
+Content-Type: application/json
+
+{
+    "name": "테스트공연1",
+    "description": "절거운 테스트공연1입니다"
+}
+
+### 전체 공연보기
+GET {{host}}/performance
+Authorization: Bearer {{Token}}
+Content-Type: application/json
+
+### 특정 공연보기
+GET {{host}}/performance/1
+Authorization: Bearer {{Token}}
+Content-Type: application/json
+
+### 특정 공연정보 수정
+PUT {{host}}/performance/1
+Authorization: Bearer {{Token}}
+Content-Type: application/json
+
+{
+    "name": "테스트공연수정1",
+    "description": "절거운 테스트공연수정1입니다"
+}
+
+### 특정 공연정보 삭제
+DELETE {{host}}/performance/1
+Authorization: Bearer {{Token}}
+Content-Type: application/json

@@ -18,4 +18,7 @@ export class User {
 
   @Column({ type: 'enum', enum: Role, default: Role.User })
   role: Role;
+
+  @Column({ type: 'integer', default: 1000000 })
+  point: number;
 }
