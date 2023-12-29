@@ -20,9 +20,15 @@ export class PerformanceService {
   ) {}
 
   async findAll(): Promise<Performance[]> {
-    return await this.performanceRepository.find({
-      select: ['id', 'name'],
-    });
+    const performances = await this.performanceRepository.createQueryBuilder('performance')
+        .leftJoinAndSelect('performance.seat', 'seat')
+        .select(['performance.id', 'performance.name'])
+        .addSelect('COUNT(seat.id)', 'total_seat_count')
+        .addSelect(`SUM(CASE WHEN seat.state = 'for_sale' THEN 1 ELSE 0 END)`, 'available_seat_count')
+        .groupBy('performance.id')
+        .getRawMany();
+
+    return performances;
   }
 
   async findOne(id: number) {
@@ -31,15 +37,17 @@ export class PerformanceService {
 
   // name, category를 포함한 값을 검색하는 type-orm 쿼리문
   async findBySearch(name: string, category: string) {
-    console.log(name, category)
-    const performance = await this.performanceRepository.findBy({ 
-      name: Like(`%${name}%`), 
-      category: Like(`%${category}%`)
-     });
-    if (_.isNil(performance)) {
-      throw new NotFoundException('검색 결과가 없습니다.');
-    }
-    return performance;
+    const performances = await this.performanceRepository.createQueryBuilder('performance')
+    .leftJoinAndSelect('performance.seat', 'seat')
+    .select(['performance.id', 'performance.name'])
+    .where('performance.name LIKE :name', { name: `%${name}%` })
+    .andWhere('performance.category LIKE :category', { category: `%${category}%` })
+    .addSelect('COUNT(seat.id)', 'total_seat_count')
+    .addSelect(`SUM(CASE WHEN seat.state = 'for_sale' THEN 1 ELSE 0 END)`, 'available_seat_count')
+    .groupBy('performance.id')
+    .getRawMany();
+
+  return performances;
   }
 
   async createByOne(name: string, description: string, dateTime: Date, location: string, poster: string, category: string) {
@@ -105,11 +113,14 @@ export class PerformanceService {
   }
 
   private async verifyPerformanceById(id: number) {
-    const performance = await this.performanceRepository.findOneBy({ id });
+    const performance = await this.performanceRepository.find({ where: { id }, relations: { seat: true } });
+    const allSeatsCount = performance[0].seat.length;
+    const availableSeatsCount = performance[0].seat.filter((seat) => seat.state === 'for_sale').length;
+    
     if (_.isNil(performance)) {
       throw new NotFoundException('존재하지 않는 공연입니다.');
     }
 
-    return performance;
+    return { performance, allSeatsCount, availableSeatsCount };
   }
 }

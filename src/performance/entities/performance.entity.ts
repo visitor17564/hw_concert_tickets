@@ -1,4 +1,5 @@
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { Seat } from "../../seat/entities/seat.entity";
 
 @Entity({
   name: 'performance',
@@ -24,4 +25,7 @@ export class Performance {
 
   @Column({ type: 'varchar', nullable: true })
   category: string;
+
+  @OneToMany(() => Seat, (seat) => seat.performance)
+  seat: Seat[];
 }

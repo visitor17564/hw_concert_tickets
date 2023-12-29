@@ -1,6 +1,7 @@
 @host = http://localhost:3000
 @Token = {{login.response.body.$.access_token}}
 
+// Users/Auth
 ### 회원가입
 POST {{host}}/user/register
 Content-Type: application/json
@@ -10,7 +11,7 @@ Content-Type: application/json
     "password": "1234"
 }
 
-### 로그인(관리자)
+### 로그인(비관리자)
 # @name login
 POST {{host}}/user/login
 Content-Type: application/json
@@ -20,7 +21,7 @@ Content-Type: application/json
     "password": "1234"
 }
 
-### 로그인(비관리자)
+### 로그인(관리자)
 # @name login
 POST {{host}}/user/login
 Content-Type: application/json
@@ -35,6 +36,8 @@ GET {{host}}/user/user-info
 Authorization: Bearer {{Token}}
 Content-Type: application/json
 
+
+// Performances
 ### 공연등록
 POST {{host}}/performance
 Authorization: Bearer {{Token}}
@@ -80,5 +83,37 @@ Content-Type: application/json
 
 ### 특정 공연정보 삭제
 DELETE {{host}}/performance/1
+Authorization: Bearer {{Token}}
+Content-Type: application/json
+
+// Seats
+### 좌석등록
+POST {{host}}/performance/2/seat
+Authorization: Bearer {{Token}}
+Content-Type: application/json
+
+{
+    "name": "B4",
+    "price": 30000
+}
+
+### 특정 좌석보기
+GET {{host}}/performance/2/seat/id/2
+Authorization: Bearer {{Token}}
+Content-Type: application/json
+
+### 좌석정보 수정
+PUT {{host}}/performance/2/seat/2
+Authorization: Bearer {{Token}}
+Content-Type: application/json
+
+{
+    "name": "A1",
+    "price": 50000,
+    "state": "ForSale"
+}
+
+### 좌석정보 삭제
+DELETE {{host}}/performance/2/seat/1
 Authorization: Bearer {{Token}}
 Content-Type: application/json
