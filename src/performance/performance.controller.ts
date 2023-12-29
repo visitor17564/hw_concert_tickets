@@ -3,7 +3,7 @@ import { RolesGuard } from 'src/auth/roles.guard';
 import { Role } from 'src/user/types/userRole.type';
 
 import {
-  Body, Controller, Delete, Get, Param, Post, Put, UploadedFile, UseGuards, UseInterceptors
+  Body, Controller, Delete, Get, Param, Post, Put, Query, UploadedFile, UseGuards, UseInterceptors
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 
@@ -20,18 +20,23 @@ export class PerformanceController {
     return await this.performanceService.findAll();
   }
 
-  @Get(':id')
+  @Get('id/:id')
   async findOne(@Param('id') id: number) {
     return await this.performanceService.findOne(id);
+  }
+
+  @Get('search')
+  async findBySearch(@Query('name') name: string, @Query('category') category: string) {
+    return await this.performanceService.findBySearch(name, category);
   }
 
   @Roles(Role.Admin)
   @Post()
   @UseInterceptors(FileInterceptor('file'))
-
   async create(@UploadedFile() file: Express.Multer.File, @Body() updatePerformanceDto: UpdatePerformanceDto) {
     if(updatePerformanceDto) {
-      return await this.performanceService.createByOne(updatePerformanceDto.name, updatePerformanceDto.description);
+      const dateTime = new Date(updatePerformanceDto.dateTime)
+      return await this.performanceService.createByOne(updatePerformanceDto.name, updatePerformanceDto.description, dateTime, updatePerformanceDto.location, updatePerformanceDto.poster, updatePerformanceDto.category);
     } else {
       await this.performanceService.createByCsv(file);
     }

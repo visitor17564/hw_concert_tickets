@@ -12,4 +12,16 @@ export class Performance {
 
   @Column({ type: 'varchar', nullable: false })
   description: string;
+
+  @Column({ type: 'date', nullable: false })
+  dateTime: Date;
+
+  @Column({ type: 'varchar', nullable: false })
+  location: string;
+
+  @Column({ type: 'varchar', nullable: true })
+  poster: string;
+
+  @Column({ type: 'varchar', nullable: true })
+  category: string;
 }

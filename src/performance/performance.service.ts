@@ -1,6 +1,6 @@
 import _ from 'lodash';
 import { parse } from 'papaparse';
-import { Repository } from 'typeorm';
+import { Repository, Like } from 'typeorm';
 
 import {
   BadRequestException,
@@ -29,17 +29,30 @@ export class PerformanceService {
     return await this.verifyPerformanceById(id);
   }
 
-  async createByOne(name: string, description: string) {
+  // name, category를 포함한 값을 검색하는 type-orm 쿼리문
+  async findBySearch(name: string, category: string) {
+    console.log(name, category)
+    const performance = await this.performanceRepository.findBy({ 
+      name: Like(`%${name}%`), 
+      category: Like(`%${category}%`)
+     });
+    if (_.isNil(performance)) {
+      throw new NotFoundException('검색 결과가 없습니다.');
+    }
+    return performance;
+  }
+
+  async createByOne(name: string, description: string, dateTime: Date, location: string, poster: string, category: string) {
     const performance = await this.performanceRepository.findOne({
       where: { name },
     });
 
     if (performance) {
-      throw new BadRequestException('이미 존재하는 팀입니다.');
+      throw new BadRequestException('이미 존재하는 공연입니다.');
     }
 
-    await this.performanceRepository.save({ name, description });
-    return { name, description }; // 생성된 팀 정보를 반환합니다. 추후 수정 예정입니다.
+    await this.performanceRepository.save({ name, description, dateTime, location, poster, category });
+    return { name, description, dateTime, location, poster, category }; // 생성된 공연 정보를 반환합니다.
   }
 
   async createByCsv(file: Express.Multer.File) {
@@ -62,9 +75,9 @@ export class PerformanceService {
     const performancesData = parseResult.data as any[];
 
     for (const performanceData of performancesData) {
-      if (_.isNil(performanceData.name) || _.isNil(performanceData.description)) {
+      if (_.isNil(performanceData.name) || _.isNil(performanceData.description) || _.isNil(performanceData.dateTime) || _.isNil(performanceData.location) || _.isNil(performanceData.poster) || _.isNil(performanceData.category)) {
         throw new BadRequestException(
-          'CSV 파일은 name과 description 컬럼을 포함해야 합니다.',
+          'CSV 파일이 양식에 적합하지 않습니다.',
         );
       }
     }
@@ -72,6 +85,10 @@ export class PerformanceService {
     const createPerformanceDtos = performancesData.map((performanceData) => ({
       name: performanceData.name,
       description: performanceData.description,
+      dateTime: performanceData.dateTime,
+      location: performanceData.location,
+      poster: performanceData.poster,
+      keyword: performanceData.category,
     }));
 
     await this.performanceRepository.save(createPerformanceDtos);
@@ -88,11 +105,11 @@ export class PerformanceService {
   }
 
   private async verifyPerformanceById(id: number) {
-    const team = await this.performanceRepository.findOneBy({ id });
-    if (_.isNil(team)) {
-      throw new NotFoundException('존재하지 않는 팀입니다.');
+    const performance = await this.performanceRepository.findOneBy({ id });
+    if (_.isNil(performance)) {
+      throw new NotFoundException('존재하지 않는 공연입니다.');
     }
 
-    return team;
+    return performance;
   }
 }

@@ -10,7 +10,7 @@ Content-Type: application/json
     "password": "1234"
 }
 
-### 로그인
+### 로그인(관리자)
 # @name login
 POST {{host}}/user/login
 Content-Type: application/json
@@ -20,8 +20,18 @@ Content-Type: application/json
     "password": "1234"
 }
 
-### email 가져오기
-GET {{host}}/user/email
+### 로그인(비관리자)
+# @name login
+POST {{host}}/user/login
+Content-Type: application/json
+
+{
+    "email": "test2@test.com",
+    "password": "1234"
+}
+
+### 회원정보 가져오기
+GET {{host}}/user/user-info
 Authorization: Bearer {{Token}}
 Content-Type: application/json
 
@@ -32,7 +42,11 @@ Content-Type: application/json
 
 {
     "name": "테스트공연1",
-    "description": "절거운 테스트공연1입니다"
+    "description": "절거운 테스트공연1입니다",
+    "dateTime": "2023-12-27 05:39:14",
+    "location": "올림픽공원",
+    "poster": "urllink",
+    "category": "뮤지컬"
 }
 
 ### 전체 공연보기
@@ -40,8 +54,13 @@ GET {{host}}/performance
 Authorization: Bearer {{Token}}
 Content-Type: application/json
 
+### 전체 공연 검색하기
+GET {{host}}/performance/search?name=테스&category=뮤
+Authorization: Bearer {{Token}}
+Content-Type: application/json
+
 ### 특정 공연보기
-GET {{host}}/performance/1
+GET {{host}}/performance/id/2
 Authorization: Bearer {{Token}}
 Content-Type: application/json
 
@@ -52,7 +71,11 @@ Content-Type: application/json
 
 {
     "name": "테스트공연수정1",
-    "description": "절거운 테스트공연수정1입니다"
+    "description": "절거운 테스트공연수정1입니다",
+    "dateTime": "2024-01-20 17:00:00",
+    "location": "올림픽공원",
+    "poster": "urllink",
+    "category": "뮤지컬"
 }
 
 ### 특정 공연정보 삭제
