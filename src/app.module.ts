@@ -12,6 +12,8 @@ import { Performance } from './performance/entities/performance.entity';
 import { PerformanceModule } from './performance/performance.module';
 import { Seat } from './seat/entities/seat.entity';
 import { SeatModule } from './seat/seat.module';
+import { Reservation } from './reservation/entities/reservation.entity';
+import { ReservationModule } from './reservation/reservation.module';
 
 const typeOrmModuleOptions = {
   useFactory: async (
@@ -24,7 +26,7 @@ const typeOrmModuleOptions = {
     host: configService.get('DB_HOST'),
     port: configService.get('DB_PORT'),
     database: configService.get('DB_NAME'),
-    entities: [User, Performance, Seat], // 엔티티는 반드시 여기에 명시!
+    entities: [User, Performance, Seat, Reservation], // 엔티티는 반드시 여기에 명시!
     synchronize: configService.get('DB_SYNC'),
     logging: true,
   }),
@@ -50,6 +52,7 @@ const typeOrmModuleOptions = {
     UserModule,
     PerformanceModule,
     SeatModule,
+    ReservationModule,
   ],
   controllers: [],
   providers: [],

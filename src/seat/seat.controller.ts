@@ -9,31 +9,29 @@ import { FileInterceptor } from '@nestjs/platform-express';
 
 import { UpdateSeatDto } from './dto/update-seat.dto';
 import { SeatService } from './seat.service';
+import { Grade } from './types/seat.grade.type';
 
 @UseGuards(RolesGuard)
 @Controller('performance/:performance_id/seat')
 export class SeatController {
   constructor(private readonly seatService: SeatService) {}
 
-  @Get('id/:seatId')
+  @Get(':seatId')
   async findOne(@Param('seatId') id: number) {
     return await this.seatService.findOne(id);
   }
 
-  @Get('search')
-  async findBySearch(@Query('name') name: string) {
-    return await this.seatService.findBySearch(name);
+  @Roles(Role.Admin)
+  @Post('csv')
+  @UseInterceptors(FileInterceptor('file'))
+  async createByCsv(@UploadedFile() file: Express.Multer.File) {
+    await this.seatService.createByCsv(file);
   }
 
   @Roles(Role.Admin)
   @Post()
-  @UseInterceptors(FileInterceptor('file'))
-  async create(@UploadedFile() file: Express.Multer.File, @Body() updateSeatDto: UpdateSeatDto, @Param('performanceId') performanceId: number) {
-    if(updateSeatDto) {
-      return await this.seatService.createByOne(performanceId, updateSeatDto.name, updateSeatDto.price);
-    } else {
-      await this.seatService.createByCsv(file);
-    }
+  async create(@Body() updateSeatDto: UpdateSeatDto, @Param('performanceId') performanceId: number) {
+    return await this.seatService.createByOne(performanceId, updateSeatDto.number, updateSeatDto.grade, updateSeatDto.price);
   }
 
   @Roles(Role.Admin)

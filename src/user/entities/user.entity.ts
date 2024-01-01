@@ -1,6 +1,7 @@
 import { Column, Entity, Index, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 
 import { Role } from '../types/userRole.type';
+import { Reservation } from '../../reservation/entities/reservation.entity';
 
 @Index('email', ['email'], { unique: true })
 @Entity({
@@ -21,4 +22,7 @@ export class User {
 
   @Column({ type: 'integer', default: 1000000 })
   point: number;
+
+  @OneToMany(() => Reservation, (reservation) => reservation.user)
+  reservation: Reservation[];
 }

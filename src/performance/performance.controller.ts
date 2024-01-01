@@ -31,15 +31,17 @@ export class PerformanceController {
   }
 
   @Roles(Role.Admin)
-  @Post()
+  @Post('csv')
   @UseInterceptors(FileInterceptor('file'))
-  async create(@UploadedFile() file: Express.Multer.File, @Body() updatePerformanceDto: UpdatePerformanceDto) {
-    if(updatePerformanceDto) {
+  async createByCsv(@UploadedFile() file: Express.Multer.File) {
+      await this.performanceService.createByCsv(file);
+  }
+
+  @Roles(Role.Admin)
+  @Post()
+  async createByOne(@Body() updatePerformanceDto: UpdatePerformanceDto) {
       const dateTime = new Date(updatePerformanceDto.dateTime)
       return await this.performanceService.createByOne(updatePerformanceDto.name, updatePerformanceDto.description, dateTime, updatePerformanceDto.location, updatePerformanceDto.poster, updatePerformanceDto.category);
-    } else {
-      await this.performanceService.createByCsv(file);
-    }
   }
 
   @Roles(Role.Admin)

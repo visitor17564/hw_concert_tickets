@@ -1,7 +1,9 @@
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn, JoinColumn } from 'typeorm';
+import { Column, Entity, ManyToOne, PrimaryGeneratedColumn, JoinColumn, OneToMany } from 'typeorm';
 
-import { State } from '../types/seatState.type';
+import { State } from '../types/seat.state.type';
+import { Grade } from '../types/seat.grade.type';
 import { Performance } from '../../performance/entities/performance.entity'
+import { Reservation } from '../../reservation/entities/reservation.entity'
 
 @Entity({
   name: 'seats',
@@ -18,11 +20,17 @@ export class Seat {
   performance_id: number;
 
   @Column({ type: 'varchar', nullable: false })
-  name: string;
+  number: number;
 
   @Column({ type: 'enum', enum: State, default: State.ForSale })
   state: State;
 
+  @Column({ type: 'enum', enum: Grade, nullable: false })
+  grade: Grade;
+
   @Column({ type: 'integer', nullable: false })
   price: number;
+
+  @OneToMany(() => Reservation, (reservation) => reservation.seat)
+  reservation: Reservation[];
 }

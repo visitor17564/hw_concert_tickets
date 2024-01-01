@@ -7,7 +7,7 @@ POST {{host}}/user/register
 Content-Type: application/json
 
 {
-    "email": "test@test.com",
+    "email": "test2@test.com",
     "password": "1234"
 }
 
@@ -63,7 +63,7 @@ Authorization: Bearer {{Token}}
 Content-Type: application/json
 
 ### 특정 공연보기
-GET {{host}}/performance/id/2
+GET {{host}}/performance/id/1
 Authorization: Bearer {{Token}}
 Content-Type: application/json
 
@@ -88,7 +88,7 @@ Content-Type: application/json
 
 // Seats
 ### 좌석등록
-POST {{host}}/performance/2/seat
+POST {{host}}/performance/1/seat
 Authorization: Bearer {{Token}}
 Content-Type: application/json
 
@@ -96,6 +96,20 @@ Content-Type: application/json
     "name": "B4",
     "price": 30000
 }
+
+### 좌석등록
+POST {{host}}/performance/1/seat/csv
+Authorization: Bearer {{Token}}
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="musical.csv"
+Content-Type: text/csv
+
+< ./ect/musical.csv
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+
 
 ### 특정 좌석보기
 GET {{host}}/performance/2/seat/id/2
