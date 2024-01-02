@@ -1,4 +1,4 @@
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn, Timestamp } from 'typeorm';
 import { Seat } from "../../seat/entities/seat.entity";
 
 @Entity({
@@ -14,7 +14,7 @@ export class Performance {
   @Column({ type: 'varchar', nullable: false })
   description: string;
 
-  @Column({ type: 'date', nullable: false })
+  @Column({ type: 'datetime', nullable: false })
   dateTime: Date;
 
   @Column({ type: 'varchar', nullable: false })

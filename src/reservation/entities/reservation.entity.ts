@@ -27,6 +27,6 @@ export class Reservation {
   @Column({ type: 'varchar', nullable: false })
   reservation_name: string
 
-  @Column({ type: 'varchar', nullable: false })
+  @Column({ type: 'integer', nullable: false })
   payment_amount: number;
 }

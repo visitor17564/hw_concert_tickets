@@ -44,12 +44,12 @@ Authorization: Bearer {{Token}}
 Content-Type: application/json
 
 {
-    "name": "테스트공연1",
+    "name": "테스트공연2",
     "description": "절거운 테스트공연1입니다",
-    "dateTime": "2023-12-27 05:39:14",
+    "dateTime": "2023-01-05 17:00:00",
     "location": "올림픽공원",
     "poster": "urllink",
-    "category": "뮤지컬"
+    "category": "연극"
 }
 
 ### 전체 공연보기
@@ -75,7 +75,7 @@ Content-Type: application/json
 {
     "name": "테스트공연수정1",
     "description": "절거운 테스트공연수정1입니다",
-    "dateTime": "2024-01-20 17:00:00",
+    "dateTime": "2024-01-20 16:00:00",
     "location": "올림픽공원",
     "poster": "urllink",
     "category": "뮤지컬"
@@ -112,7 +112,7 @@ Content-Type: text/csv
 
 
 ### 특정 좌석보기
-GET {{host}}/performance/2/seat/id/2
+GET {{host}}/performance/1/seat/1
 Authorization: Bearer {{Token}}
 Content-Type: application/json
 
@@ -129,5 +129,40 @@ Content-Type: application/json
 
 ### 좌석정보 삭제
 DELETE {{host}}/performance/2/seat/1
+Authorization: Bearer {{Token}}
+Content-Type: application/json
+
+
+// 예약
+### 예약등록
+POST {{host}}/reservation
+Authorization: Bearer {{Token}}
+Content-Type: application/json
+
+[
+  {
+    "seat_id": 1,
+    "reservation_name": "홍길동",
+    "payment_amount": 50000
+  },
+    {
+      "seat_id": 2,
+      "reservation_name": "김철수",
+      "payment_amount": 50000
+    }
+]
+
+### 예약보기
+GET {{host}}/reservation
+Authorization: Bearer {{Token}}
+Content-Type: application/json
+
+### 특정 예약 보기
+GET {{host}}/reservation/8
+Authorization: Bearer {{Token}}
+Content-Type: application/json
+
+### 특정 예약 취소
+DELETE {{host}}/reservation/8
 Authorization: Bearer {{Token}}
 Content-Type: application/json

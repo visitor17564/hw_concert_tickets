@@ -91,7 +91,10 @@ export class SeatService {
   }
 
   private async verifySeatById(id: number) {
-    const seat = await this.seatRepository.findOneBy({ id });
+    const seat = await this.seatRepository.find({ 
+      where: { id },
+      relations: ['performance'],
+     });
     if (_.isNil(seat)) {
       throw new NotFoundException('존재하지 않는 좌석입니다.');
     }

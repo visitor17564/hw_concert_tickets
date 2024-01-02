@@ -88,12 +88,19 @@ export class PerformanceService {
           'CSV 파일이 양식에 적합하지 않습니다.',
         );
       }
+      const dateTime = new Date(performanceData.dateTime)
+      const performance = await this.performanceRepository.findOne({
+        where: { name: performanceData.name, dateTime },
+      });
+      if (performance) {
+        throw new BadRequestException('같은날짜, 시간에 같은이름의 공연이 존재합니다.');
+      }
     }
 
     const createPerformanceDtos = performancesData.map((performanceData) => ({
       name: performanceData.name,
       description: performanceData.description,
-      dateTime: performanceData.dateTime,
+      dateTime: new Date(performanceData.dateTime),
       location: performanceData.location,
       poster: performanceData.poster,
       keyword: performanceData.category,

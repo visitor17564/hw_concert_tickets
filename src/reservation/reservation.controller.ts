@@ -1,16 +1,20 @@
 import {
-  Body, Controller, Delete, Get, Param, Post, Put, Query, UploadedFile, UseGuards, UseInterceptors
+  Body, Controller, Delete, Get, Param, Post, Put, UseGuards, BadRequestException
 } from '@nestjs/common';
 import { UserInfo } from 'src/utils/userInfo.decorator';
 import { User } from '../user/entities/user.entity';
 import { AuthGuard } from '@nestjs/passport';
-import { UpdateReservationsDto } from './dto/update-reservation.dto';
+import { CreateReservationsDto } from './dto/create-reservation.dto';
 import { ReservationService } from './reservation.service';
+import { SeatService } from '../seat/seat.service';
+import { State } from '../seat/types/seat.state.type';
 
 @Controller('reservation')
 @UseGuards(AuthGuard('jwt'))
 export class ReservationController {
-  constructor(private readonly reservationService: ReservationService) {}
+  constructor(private readonly reservationService: ReservationService,
+    private readonly seatService: SeatService,
+    ) {}
 
   @Get()
   async getAllReservation(@UserInfo() user: User) {
@@ -23,16 +27,21 @@ export class ReservationController {
   }
 
   @Post()
-  async create(@UserInfo() user: User, @Body() updateReservationsDto: UpdateReservationsDto) {
+  async create(@UserInfo() user: User, @Body() createReservationsDtos: CreateReservationsDto[]) {
     // 한사람이 한번에 여러개 예약을 할 수 있어야 함
-    if(updateReservationsDto) {
-      return await this.reservationService.create(user.id, updateReservationsDto);
+    // 예약된 좌석의 status가 for_sale이 아니면 불가능
+    let sumOfPrice = 0
+    for(const value of createReservationsDtos) {
+      const seat = await this.seatService.findOne(value.seat_id);
+      if(seat[0].state !== State.ForSale) {
+        throw new BadRequestException('이미 예약된 좌석입니다.');
+      }
+      sumOfPrice += value.payment_amount;
     }
-  }
-
-  @Put(':id')
-  async update(@UserInfo() user: User, @Param('id') id: number, @Body() updateReservationsDto: UpdateReservationsDto) {
-    await this.reservationService.update(user.id, id, updateReservationsDto);
+    if(user.point<=sumOfPrice) {
+      throw new BadRequestException('포인트가 모자랍니다.');
+    }
+    return await this.reservationService.create(user.id, createReservationsDtos, sumOfPrice);
   }
 
   @Delete(':id')

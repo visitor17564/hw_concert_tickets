@@ -1,5 +1,6 @@
 import _ from 'lodash';
-import { Repository, Like } from 'typeorm';
+import { Repository } from 'typeorm';
+import { getConnection } from "typeorm";
 
 import {
   BadRequestException,
@@ -8,8 +9,11 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 
-import { UpdateReservationsDto } from './dto/update-reservation.dto';
+import { CreateReservationsDto } from './dto/create-reservation.dto';
 import { Reservation } from './entities/reservation.entity';
+import { Seat } from '../seat/entities/seat.entity';
+import { State } from '../seat/types/seat.state.type'
+import { User } from '../user/entities/user.entity';
 
 @Injectable()
 export class ReservationService {
@@ -20,11 +24,13 @@ export class ReservationService {
   
   // 예약에걸린 시트에 걸린 공연정보를 반환
   // 예약가격도 반환
-  async getAllReservation(id): Promise<Reservation[]> {
-    return await this.reservationRepository.find({
-      where: { user_id: id },
-      relations: ['seat', 'performance'],
-    });
+  async getAllReservation(id) {
+    return await this.reservationRepository
+    .createQueryBuilder('reservation')
+    .leftJoinAndSelect('reservation.seat', 'seat')
+    .leftJoinAndSelect('seat.performance', 'performance')
+    .where('reservation.user_id = :id', { id: id })
+    .getMany()
   }
 
   // 예약에걸린 시트에 걸린 공연정보를 반환
@@ -33,49 +39,41 @@ export class ReservationService {
     return await this.verifyReservationById(id);
   }
 
-  async create(user_id: number, updateReservationsDto: UpdateReservationsDto) {
-    for (const [seat_id] of updateReservationsDto) {
-      const reservation = await this.reservationRepository.findOne({
-        where: { seat_id },
-      });
+  async create(user_id: number, createReservationsDto: CreateReservationsDto[], sumOfPrice: number) {
+    const reservations = createReservationsDto.map(createReservationDto => {
+      const reservation = new Reservation();
+      reservation.seat_id = createReservationDto.seat_id;
+      reservation.user_id = user_id;
+      reservation.reservation_name = createReservationDto.reservation_name;
+      reservation.payment_amount = createReservationDto.payment_amount;
+      return reservation
+    });
+
+    const connection = await getConnection();
+    await connection.transaction(async (transactionalEntityManager) => {
+      // 예약 저장
+      await transactionalEntityManager.save(reservations);
   
-      if (reservation) {
-        throw new BadRequestException('해당 시트에는 예약이 존재합니다.');
+      // 좌석 상태 변경
+      for(const value of createReservationsDto) {
+        const seat = await transactionalEntityManager.findOne(Seat, {
+          where: {
+            id: value.seat_id,
+          },
+        });
+        seat.state = State.SoldOut;
+        await transactionalEntityManager.save(seat);
       }
-    }
-
-    const createReservationDtos = updateReservationsDto.map((updateReservationDto) => ({
-      user_id: user_id,
-      seat_id: updateReservationDto.seat_id,
-      reservation_name: updateReservationDto.reservation_name,
-      payment_amount: updateReservationDto.payment_amount,
-    }));
-
-    await this.reservationRepository.save(createReservationDtos);
-  }
-
-  async update(user_id: number, id: number, updateReservationsDto: UpdateReservationsDto) {
-    const reservation = await this.verifyReservationById(id);
-    if(reservation.user_id != user_id) {
-      throw new BadRequestException('수정 권한이없습니다. 예약자가 아닙니다.');
-    }
-    for (const [seat_id] of updateReservationsDto) {
-      const reservation = await this.reservationRepository.findOne({
-        where: { seat_id },
+      // 예약정보 저장
+      await this.reservationRepository.save(reservations);
+      // 유저 포인트 차감
+      const user = await transactionalEntityManager.findOne(User, {
+        where: {
+          id: user_id,
+        },
       });
-  
-      if (reservation) {
-        throw new BadRequestException('이미 예약이 존재하는 시트입니다.');
-      }
-    }
-    const updateReservationDtos = updateReservationsDto.map((updateReservationDto) => ({
-      user_id: user_id,
-      seat_id: updateReservationDto.seat_id,
-      reservation_name: updateReservationDto.reservation_name,
-      payment_amount: updateReservationDto.payment_amount,
-    }));
-
-    await this.reservationRepository.save(updateReservationDtos);
+      user.point -= sumOfPrice;
+      await transactionalEntityManager.save(user)})
   }
 
   async delete(user_id: number, id: number) {
@@ -83,15 +81,39 @@ export class ReservationService {
     if(reservation.user_id != user_id) {
       throw new BadRequestException('삭제 권한이없습니다. 예약자가 아닙니다.');
     }
-    await this.reservationRepository.delete({ id });
+    const connection = await getConnection();
+    await connection.transaction(async (transactionalEntityManager) => {
+      // 좌석 상태 변경
+      const seat = await transactionalEntityManager.findOne(Seat, {
+        where: {
+          id: reservation.seat_id,
+        },
+      });
+      seat.state = State.SoldOut;
+      await transactionalEntityManager.save(seat);
+      // 유저 포인트 갱신
+      const user = await transactionalEntityManager.findOne(User, {
+        where: {
+          id: user_id,
+        },
+      });
+      user.point += reservation.payment_amount;
+      await transactionalEntityManager.save(user)})
+      // 예약 삭제
+      await this.reservationRepository.delete({ id });
   }
 
   private async verifyReservationById(id: number) {
-    const seat = await this.reservationRepository.findOneBy({ id });
-    if (_.isNil(seat)) {
-      throw new NotFoundException('존재하지 않는 좌석입니다.');
+    const reservation = await this.reservationRepository
+    .createQueryBuilder('reservation')
+    .leftJoinAndSelect('reservation.seat', 'seat')
+    .leftJoinAndSelect('seat.performance', 'performance')
+    .where('reservation.id = :id', { id: id })
+    .getOne()
+    if (_.isNil(reservation)) {
+      throw new NotFoundException('존재하지 않는 예약입니다.');
     }
 
-    return seat;
+    return reservation;
   }
 }

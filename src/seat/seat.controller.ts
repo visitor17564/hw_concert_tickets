@@ -9,7 +9,6 @@ import { FileInterceptor } from '@nestjs/platform-express';
 
 import { UpdateSeatDto } from './dto/update-seat.dto';
 import { SeatService } from './seat.service';
-import { Grade } from './types/seat.grade.type';
 
 @UseGuards(RolesGuard)
 @Controller('performance/:performance_id/seat')
