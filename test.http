@@ -164,6 +164,6 @@ Authorization: Bearer {{Token}}
 Content-Type: application/json
 
 ### 특정 예약 취소
-DELETE {{host}}/reservation/14
+DELETE {{host}}/reservation/16
 Authorization: Bearer {{Token}}
 Content-Type: application/json
