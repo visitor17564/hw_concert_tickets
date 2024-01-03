@@ -38,7 +38,7 @@ Content-Type: application/json
 
 
 // Performances
-### 공연등록
+### 공연등록(1개)
 POST {{host}}/performance
 Authorization: Bearer {{Token}}
 Content-Type: application/json
@@ -51,6 +51,18 @@ Content-Type: application/json
     "poster": "urllink",
     "category": "연극"
 }
+
+### 공연등록(csv)
+POST {{host}}/performance/csv
+Authorization: Bearer {{Token}}
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="file"; filename="performances.csv"
+Content-Type: text/csv
+
+< ./ect/performances.csv
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
 
 ### 전체 공연보기
 GET {{host}}/performance
@@ -104,10 +116,10 @@ Authorization: Bearer {{Token}}
 Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
 
 ------WebKitFormBoundary7MA4YWxkTrZu0gW
-Content-Disposition: form-data; name="file"; filename="musical.csv"
+Content-Disposition: form-data; name="file"; filename="seats.csv"
 Content-Type: text/csv
 
-< ./ect/musical.csv
+< ./ect/seats.csv
 ------WebKitFormBoundary7MA4YWxkTrZu0gW--
 
 

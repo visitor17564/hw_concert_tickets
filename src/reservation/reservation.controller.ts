@@ -31,13 +31,16 @@ export class ReservationController {
     // 한사람이 한번에 여러개 예약을 할 수 있어야 함
     // 예약된 좌석의 status가 for_sale이 아니면 불가능
     let sumOfPrice = 0
+    // 좌석 예약여부 확인
     for(const value of createReservationsDtos) {
       const seat = await this.seatService.findOne(value.seat_id);
       if(seat[0].state !== State.ForSale) {
         throw new BadRequestException('이미 예약된 좌석입니다.');
       }
+      // 하는김에 총금액도 합산
       sumOfPrice += value.payment_amount;
     }
+    // 포인트 모잘라유? 체크
     if(user.point<=sumOfPrice) {
       throw new BadRequestException('포인트가 모자랍니다.');
     }

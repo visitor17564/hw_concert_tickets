@@ -103,7 +103,7 @@ export class PerformanceService {
       dateTime: new Date(performanceData.dateTime),
       location: performanceData.location,
       poster: performanceData.poster,
-      keyword: performanceData.category,
+      category: performanceData.category,
     }));
 
     await this.performanceRepository.save(createPerformanceDtos);

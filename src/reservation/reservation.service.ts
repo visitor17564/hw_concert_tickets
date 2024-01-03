@@ -90,7 +90,7 @@ export class ReservationService {
     // 트랜잭션으로 3개 작업 수행
     await this.reservationRepository.manager.transaction(async (manager) => {
       try {
-        // 1. reservation 저장
+        // 1. reservation 삭제
         await manager.delete(Reservation, id);
         // 2. seat state 변경
         const seat = await this.seatRepository.findOne({
