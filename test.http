@@ -44,7 +44,7 @@ Authorization: Bearer {{Token}}
 Content-Type: application/json
 
 {
-    "name": "테스트공연2",
+    "name": "테스트공연3",
     "description": "절거운 테스트공연1입니다",
     "dateTime": "2023-01-05 17:00:00",
     "location": "올림픽공원",
@@ -58,47 +58,48 @@ Authorization: Bearer {{Token}}
 Content-Type: application/json
 
 ### 전체 공연 검색하기
-GET {{host}}/performance/search?name=테스&category=뮤
+GET {{host}}/performance/search?name=테스&category=연
 Authorization: Bearer {{Token}}
 Content-Type: application/json
 
 ### 특정 공연보기
-GET {{host}}/performance/id/1
+GET {{host}}/performance/id/3
 Authorization: Bearer {{Token}}
 Content-Type: application/json
 
 ### 특정 공연정보 수정
-PUT {{host}}/performance/1
+PUT {{host}}/performance/2
 Authorization: Bearer {{Token}}
 Content-Type: application/json
 
 {
-    "name": "테스트공연수정1",
-    "description": "절거운 테스트공연수정1입니다",
-    "dateTime": "2024-01-20 16:00:00",
-    "location": "올림픽공원",
+    "name": "테스트공연수정2",
+    "description": "절거운 테스트공연수정2입니다",
+    "dateTime": "2024-01-20 13:00:00",
+    "location": "올ㅋ림픽공원",
     "poster": "urllink",
-    "category": "뮤지컬"
+    "category": "연극"
 }
 
 ### 특정 공연정보 삭제
-DELETE {{host}}/performance/1
+DELETE {{host}}/performance/2
 Authorization: Bearer {{Token}}
 Content-Type: application/json
 
 // Seats
-### 좌석등록
-POST {{host}}/performance/1/seat
+### 좌석등록(1개)
+POST {{host}}/seat
 Authorization: Bearer {{Token}}
 Content-Type: application/json
 
 {
-    "name": "B4",
+    "grade": "a",
+    "number": 1,
     "price": 30000
 }
 
-### 좌석등록
-POST {{host}}/performance/1/seat/csv
+### 좌석등록(csv)
+POST {{host}}/seat/csv
 Authorization: Bearer {{Token}}
 Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
 
@@ -112,23 +113,23 @@ Content-Type: text/csv
 
 
 ### 특정 좌석보기
-GET {{host}}/performance/1/seat/1
+GET {{host}}/seat/41
 Authorization: Bearer {{Token}}
 Content-Type: application/json
 
 ### 좌석정보 수정
-PUT {{host}}/performance/2/seat/2
+PUT {{host}}/seat/41
 Authorization: Bearer {{Token}}
 Content-Type: application/json
 
 {
-    "name": "A1",
-    "price": 50000,
-    "state": "ForSale"
+    "grade": "a",
+    "number": 1,
+    "price": 40000
 }
 
 ### 좌석정보 삭제
-DELETE {{host}}/performance/2/seat/1
+DELETE {{host}}/seat/41
 Authorization: Bearer {{Token}}
 Content-Type: application/json
 
@@ -158,11 +159,11 @@ Authorization: Bearer {{Token}}
 Content-Type: application/json
 
 ### 특정 예약 보기
-GET {{host}}/reservation/8
+GET {{host}}/reservation/13
 Authorization: Bearer {{Token}}
 Content-Type: application/json
 
 ### 특정 예약 취소
-DELETE {{host}}/reservation/8
+DELETE {{host}}/reservation/14
 Authorization: Bearer {{Token}}
 Content-Type: application/json

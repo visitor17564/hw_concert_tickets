@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsString, IsNumber, IsEnum } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsEnum } from 'class-validator';
 import { Grade } from '../types/seat.grade.type'
 export class UpdateSeatDto {
   @IsEnum(Grade)

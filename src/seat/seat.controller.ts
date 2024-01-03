@@ -11,7 +11,7 @@ import { UpdateSeatDto } from './dto/update-seat.dto';
 import { SeatService } from './seat.service';
 
 @UseGuards(RolesGuard)
-@Controller('performance/:performance_id/seat')
+@Controller('seat')
 export class SeatController {
   constructor(private readonly seatService: SeatService) {}
 
@@ -29,19 +29,19 @@ export class SeatController {
 
   @Roles(Role.Admin)
   @Post()
-  async create(@Body() updateSeatDto: UpdateSeatDto, @Param('performanceId') performanceId: number) {
+  async creatByOne(@Body() updateSeatDto: UpdateSeatDto, @Param('performance_id') performanceId: number) {
     return await this.seatService.createByOne(performanceId, updateSeatDto.number, updateSeatDto.grade, updateSeatDto.price);
   }
 
   @Roles(Role.Admin)
   @Put(':seatId')
-  async update(@Param('performance_id') performance_id: number, @Param('seatId') id: number, @Body() updateSeatDto: UpdateSeatDto) {
-    await this.seatService.update(performance_id, id, updateSeatDto);
+  async update(@Param('seatId') id: number, @Body() updateSeatDto: UpdateSeatDto) {
+    await this.seatService.update(id, updateSeatDto);
   }
 
   @Roles(Role.Admin)
   @Delete(':seatId')
-  async delete(@Param('performance_id') performance_id: number, @Param('seatId') id: number, ) {
-    await this.seatService.delete(performance_id, id);
+  async delete(@Param('seatId') id: number) {
+    await this.seatService.delete(id);
   }
 }

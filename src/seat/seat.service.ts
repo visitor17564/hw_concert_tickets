@@ -25,6 +25,7 @@ export class SeatService {
   }
 
   async createByOne(performance_id: number, number: number, grade: Grade, price: number) {
+    console.log(performance_id, number, grade, price)
     const seat = await this.seatRepository.findOne({
       where: { performance_id, number, grade },
     });
@@ -80,14 +81,20 @@ export class SeatService {
     await this.seatRepository.save(createSeatDtos);
   }
 
-  async update(performance_id: number, id: number, updateSeatDto: UpdateSeatDto) {
-    await this.verifySeatById(id);
-    await this.seatRepository.update({ id, performance_id }, updateSeatDto);
+  async update(id: number, updateSeatDto: UpdateSeatDto) {
+    const seat = await this.verifySeatById(id);
+    if(!seat.length) {
+      throw new NotFoundException('존재하지 않는 좌석입니다.');
+    }
+    await this.seatRepository.update({ id, performance_id: seat[0].performance_id }, updateSeatDto);
   }
 
-  async delete(performance_id: number, id: number) {
-    await this.verifySeatById(id);
-    await this.seatRepository.delete({ id, performance_id });
+  async delete(id: number) {
+    const seat = await this.verifySeatById(id);
+    if(!seat.length) {
+      throw new NotFoundException('존재하지 않는 좌석입니다.');
+    }
+    await this.seatRepository.delete({ id, performance_id: seat[0].performance_id });
   }
 
   private async verifySeatById(id: number) {

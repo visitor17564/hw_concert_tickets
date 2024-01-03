@@ -1,6 +1,5 @@
 import _ from 'lodash';
 import { Repository } from 'typeorm';
-import { getConnection } from "typeorm";
 
 import {
   BadRequestException,
@@ -20,6 +19,10 @@ export class ReservationService {
   constructor(
     @InjectRepository(Reservation)
     private readonly reservationRepository: Repository<Reservation>,
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
+    @InjectRepository(Seat)
+    private readonly seatRepository: Repository<Seat>,
   ) {}
   
   // 예약에걸린 시트에 걸린 공연정보를 반환
@@ -49,31 +52,28 @@ export class ReservationService {
       return reservation
     });
 
-    const connection = await getConnection();
-    await connection.transaction(async (transactionalEntityManager) => {
-      // 예약 저장
-      await transactionalEntityManager.save(reservations);
+    // 예약 저장
+    await this.reservationRepository.save(reservations);
   
-      // 좌석 상태 변경
-      for(const value of createReservationsDto) {
-        const seat = await transactionalEntityManager.findOne(Seat, {
-          where: {
-            id: value.seat_id,
-          },
-        });
-        seat.state = State.SoldOut;
-        await transactionalEntityManager.save(seat);
-      }
-      // 예약정보 저장
-      await this.reservationRepository.save(reservations);
-      // 유저 포인트 차감
-      const user = await transactionalEntityManager.findOne(User, {
+    // 좌석 상태 변경
+    for(const value of createReservationsDto) {
+      const seat = await this.seatRepository.findOne({
         where: {
-          id: user_id,
+          id: value.seat_id,
         },
       });
-      user.point -= sumOfPrice;
-      await transactionalEntityManager.save(user)})
+      seat.state = State.SoldOut;
+      await this.seatRepository.save(seat);
+    }
+
+    // 유저 포인트 차감
+    const user = await this.userRepository.findOne({
+      where: {
+        id: user_id,
+      },
+    });
+    user.point -= sumOfPrice;
+    await this.userRepository.save(user)
   }
 
   async delete(user_id: number, id: number) {
@@ -81,26 +81,26 @@ export class ReservationService {
     if(reservation.user_id != user_id) {
       throw new BadRequestException('삭제 권한이없습니다. 예약자가 아닙니다.');
     }
-    const connection = await getConnection();
-    await connection.transaction(async (transactionalEntityManager) => {
-      // 좌석 상태 변경
-      const seat = await transactionalEntityManager.findOne(Seat, {
-        where: {
-          id: reservation.seat_id,
-        },
-      });
-      seat.state = State.SoldOut;
-      await transactionalEntityManager.save(seat);
-      // 유저 포인트 갱신
-      const user = await transactionalEntityManager.findOne(User, {
-        where: {
-          id: user_id,
-        },
-      });
-      user.point += reservation.payment_amount;
-      await transactionalEntityManager.save(user)})
-      // 예약 삭제
-      await this.reservationRepository.delete({ id });
+    // 좌석 상태 변경
+    const seat = await this.seatRepository.findOne({
+      where: {
+        id: reservation.seat_id,
+      },
+    });
+    seat.state = State.ForSale;
+    await this.seatRepository.save(seat);
+
+    // 유저 포인트 갱신
+    const user = await this.userRepository.findOne({
+      where: {
+        id: user_id,
+      },
+    });
+    user.point += reservation.payment_amount;
+    await this.userRepository.save(user)
+
+    // 예약 삭제
+    await this.reservationRepository.delete({ id });
   }
 
   private async verifyReservationById(id: number) {
